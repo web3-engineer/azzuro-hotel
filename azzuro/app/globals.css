@@ -1,26 +1,28 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #F0F5F2; 
+    --foreground: #000000; /* PRETO TOTAL */
+  }
+
+  .dark {
+    --background: #0A140E;
+    --foreground: #ECFDF5;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground) !important; /* !important garante que o preto vença o branco */
+  transition: background-color 0.4s ease;
+}
+
+/* Forçamos que todo texto no modo claro seja preto, a menos que seja dark mode */
+h1, h2, h3, h4, p, span, a {
+  color: #000000;
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark p, .dark span, .dark a {
+  color: #ECFDF5;
 }

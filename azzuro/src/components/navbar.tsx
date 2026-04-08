@@ -1,27 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
     const [activeSection, setActiveSection] = useState("home");
     const [isDarkMode, setIsDarkMode] = useState(true);
+    const pathname = usePathname();
 
-    // Hook para detectar o tema inicial (preferência do sistema ou salvo no navegador)
     useEffect(() => {
         const root = window.document.documentElement;
-        // Verifica se já existe uma preferência salva ou pega a do sistema
         const isDark = localStorage.getItem("theme") === "dark" ||
             (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
         setIsDarkMode(isDark);
-        if (isDark) {
-            root.classList.add("dark");
-        } else {
-            root.classList.remove("dark");
-        }
+        if (isDark) root.classList.add("dark");
+        else root.classList.remove("dark");
     }, []);
 
-    // Função para alternar o tema manualmente no clique do botão
     const toggleTheme = () => {
         const root = window.document.documentElement;
         if (isDarkMode) {
@@ -35,162 +32,84 @@ export function Navbar() {
         }
     };
 
-    // Hook para detectar o scroll e atualizar a seção ativa
     useEffect(() => {
+        if (pathname !== "/") return;
         const handleScroll = () => {
-            const sections = ["home", "acomodacoes", "experiencias", "restaurante", "VIP"];
+            const sections = ["home", "acomodacoes", "experiencias"];
             const scrollPosition = window.scrollY + 200;
-
             for (const section of sections) {
                 const element = document.getElementById(section);
                 if (element) {
                     const { offsetTop, offsetHeight } = element;
-                    if (
-                        scrollPosition >= offsetTop &&
-                        scrollPosition < offsetTop + offsetHeight
-                    ) {
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
                         setActiveSection(section);
                     }
                 }
             }
         };
-
         window.addEventListener("scroll", handleScroll);
-        handleScroll();
-
         return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+    }, [pathname]);
 
-    // Função para fazer o scroll suave ao clicar no link
-    const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-        // Se não estivermos na página inicial, deixa o link normal redirecionar para "/#id"
-        if (window.location.pathname !== "/") return;
-
-        e.preventDefault();
-        const element = document.getElementById(id);
-        if (element) {
-            window.scrollTo({
-                top: element.offsetTop - 100,
-                behavior: "smooth",
-            });
+    const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+        if (pathname === "/") {
+            e.preventDefault();
+            const element = document.getElementById(id);
+            if (element) {
+                window.scrollTo({ top: element.offsetTop - 100, behavior: "smooth" });
+            }
         }
     };
 
     return (
         <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-            {/* Adaptação das cores do Liquid Glass para Modo Claro e Escuro */}
-            <div className="flex items-center gap-4 md:gap-8 px-6 py-3 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-2xl border border-emerald-900/10 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] transition-all">
+            <div className="flex items-center gap-4 md:gap-8 px-6 py-3 rounded-full bg-white/90 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/10 shadow-lg transition-all">
+                
+                <Link href="/" onClick={(e) => handleLinkClick(e, "home")} className="mr-2 transition-transform hover:scale-105">
+                    <img src="/azzuro-logo-navbar-.png" alt="Logo" className="h-6 w-auto block dark:brightness-110" />
+                </Link>
 
-                <a
-                    href="/#home"
-                    onClick={(e) => scrollToSection(e, "home")}
-                    className="font-bold tracking-widest text-xl text-emerald-700 dark:text-emerald-400 mr-2 cursor-pointer transition-colors"
-                >
-                    AZZURO
-                </a>
+                <div className="hidden md:flex items-center gap-8 text-[13px] font-semibold">
+                    <Link href="/#home" onClick={(e) => handleLinkClick(e, "home")}
+                        className={`transition-all duration-300 ${pathname === "/" && activeSection === "home"
+                            ? "text-black dark:text-emerald-400" 
+                            : "text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white"
+                        }`}>
+                        Hotel
+                    </Link>
 
-                <div className="hidden md:flex items-center gap-8 text-[13px] font-medium">
-                    <a
-                        href="/#home"
-                        onClick={(e) => scrollToSection(e, "home")}
-                        className={`transition-all duration-300 ${activeSection === "home"
-                                ? "text-emerald-950 dark:text-emerald-50 drop-shadow-[0_0_8px_rgba(5,150,105,0.3)] dark:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                                : "text-emerald-800/60 hover:text-emerald-950 dark:text-emerald-100/50 dark:hover:text-emerald-50"
-                            }`}
-                    >
-                        O Hotel
-                    </a>
-
-                    {/* MENU DROPDOWN DE ACOMODAÇÕES */}
                     <div className="relative group py-2">
-                        <a
-                            href="/#acomodacoes"
-                            onClick={(e) => scrollToSection(e, "acomodacoes")}
-                            className={`transition-all duration-300 ${activeSection === "acomodacoes"
-                                    ? "text-emerald-950 dark:text-emerald-50 drop-shadow-[0_0_8px_rgba(5,150,105,0.3)] dark:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                                    : "text-emerald-800/60 hover:text-emerald-950 dark:text-emerald-100/50 dark:hover:text-emerald-50"
-                                }`}
-                        >
+                        <Link href="/#acomodacoes" onClick={(e) => handleLinkClick(e, "acomodacoes")}
+                            className={`transition-all duration-300 ${pathname === "/" && activeSection === "acomodacoes"
+                                ? "text-black dark:text-emerald-400" 
+                                : "text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white"
+                            }`}>
                             Acomodações
-                        </a>
-
-                        {/* Abas Sub-menu Liquid Glass */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                            <div className="flex flex-col w-48 p-2 rounded-2xl bg-white/80 dark:bg-[#0A140E]/80 backdrop-blur-2xl border border-emerald-900/10 dark:border-white/10 shadow-xl">
-                                <a href="/acomodacoes/bangalo-jacuzzi" className="px-4 py-2.5 text-xs font-medium rounded-xl text-emerald-800/70 hover:text-emerald-950 hover:bg-emerald-50 dark:text-emerald-100/60 dark:hover:text-emerald-50 dark:hover:bg-white/10 transition-colors">Bangalô c/ Jacuzzi</a>
-                                <a href="/acomodacoes/bangalo" className="px-4 py-2.5 text-xs font-medium rounded-xl text-emerald-800/70 hover:text-emerald-950 hover:bg-emerald-50 dark:text-emerald-100/60 dark:hover:text-emerald-50 dark:hover:bg-white/10 transition-colors">Bangalô Simples</a>
-                                <a href="/acomodacoes/chale-family" className="px-4 py-2.5 text-xs font-medium rounded-xl text-emerald-800/70 hover:text-emerald-950 hover:bg-emerald-50 dark:text-emerald-100/60 dark:hover:text-emerald-50 dark:hover:bg-white/10 transition-colors">Chalé Family</a>
-                                <a href="/acomodacoes/suite-premium" className="px-4 py-2.5 text-xs font-medium rounded-xl text-emerald-800/70 hover:text-emerald-950 hover:bg-emerald-50 dark:text-emerald-100/60 dark:hover:text-emerald-50 dark:hover:bg-white/10 transition-colors">Suíte Premium</a>
+                        </Link>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                            <div className="flex flex-col w-48 p-2 rounded-2xl bg-white dark:bg-[#0A140E] border border-black/5 dark:border-white/10 shadow-xl">
+                                <Link href="/acomodacoes/bangalo-jacuzzi" className="px-4 py-2.5 text-xs font-medium rounded-xl text-black/70 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">Bangalô c/ Jacuzzi</Link>
+                                <Link href="/acomodacoes/bangalo" className="px-4 py-2.5 text-xs font-medium rounded-xl text-black/70 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">Bangalô Tradicional</Link>
+                                <Link href="/acomodacoes/chale-family" className="px-4 py-2.5 text-xs font-medium rounded-xl text-black/70 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">Chalé Family</Link>
+                                <Link href="/acomodacoes/suite-premium" className="px-4 py-2.5 text-xs font-medium rounded-xl text-black/70 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">Suíte Premium</Link>
                             </div>
                         </div>
                     </div>
 
-                    <a
-                        href="/#experiencias"
-                        onClick={(e) => scrollToSection(e, "experiencias")}
-                        className={`transition-all duration-300 ${activeSection === "experiencias"
-                                ? "text-emerald-950 dark:text-emerald-50 drop-shadow-[0_0_8px_rgba(5,150,105,0.3)] dark:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                                : "text-emerald-800/60 hover:text-emerald-950 dark:text-emerald-100/50 dark:hover:text-emerald-50"
-                            }`}
-                    >
-                        Experiências
-                    </a>
-                    <a
-                        href="/#restaurante"
-                        onClick={(e) => scrollToSection(e, "restaurante")}
-                        className={`transition-all duration-300 ${activeSection === "restaurante"
-                                ? "text-emerald-950 dark:text-emerald-50 drop-shadow-[0_0_8px_rgba(5,150,105,0.3)] dark:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                                : "text-emerald-800/60 hover:text-emerald-950 dark:text-emerald-100/50 dark:hover:text-emerald-50"
-                            }`}
-                    >
+                    <Link href="/restaurante" className={`transition-all ${pathname === "/restaurante" ? "text-orange-600" : "text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white"}`}>
                         Restaurante
-                    </a>
-                    <a
-                        href="/#VIP"
-                        onClick={(e) => scrollToSection(e, "VIP")}
-                        className={`transition-all duration-300 ${activeSection === "VIP"
-                                ? "text-emerald-950 dark:text-emerald-50 drop-shadow-[0_0_8px_rgba(5,150,105,0.3)] dark:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                                : "text-emerald-800/60 hover:text-emerald-950 dark:text-emerald-100/50 dark:hover:text-emerald-50"
-                            }`}
-                    >
+                    </Link>
+
+                    <Link href="/vip" className={`transition-all ${pathname === "/vip" ? "text-black dark:text-emerald-400" : "text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white"}`}>
                         VIP
-                    </a>
+                    </Link>
                 </div>
 
-                <div className="flex items-center gap-2 ml-2">
-                    {/* Botão de Alternância de Tema (Sol/Lua) */}
-                    <button
-                        onClick={toggleTheme}
-                        className="p-2 rounded-full text-emerald-800 hover:bg-emerald-100/50 dark:text-emerald-100/70 dark:hover:bg-white/10 dark:hover:text-emerald-50 transition-all"
-                        aria-label="Alternar tema"
-                    >
-                        {isDarkMode ? (
-                            // Ícone de Sol Elegante (Modo Escuro ativo, clique para ir para Claro)
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="4"></circle>
-                                <path d="M12 2v2"></path>
-                                <path d="M12 20v2"></path>
-                                <path d="m4.93 4.93 1.41 1.41"></path>
-                                <path d="m17.66 17.66 1.41 1.41"></path>
-                                <path d="M2 12h2"></path>
-                                <path d="M20 12h2"></path>
-                                <path d="m6.34 17.66-1.41 1.41"></path>
-                                <path d="m19.07 4.93-1.41 1.41"></path>
-                            </svg>
-                        ) : (
-                            // Ícone de Lua Elegante (Modo Claro ativo, clique para ir para Escuro)
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-                            </svg>
-                        )}
+                <div className="flex items-center gap-2">
+                    <button onClick={toggleTheme} className="p-2 text-black dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-all">
+                        {isDarkMode ? "☀️" : "🌙"}
                     </button>
-
-                    <a
-                        href="https://wa.me/5585997105228"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="bg-emerald-700 text-emerald-50 text-[13px] font-medium px-5 py-2.5 rounded-full hover:scale-105 hover:bg-emerald-600 active:scale-95 transition-all shadow-lg hidden sm:block"
-                    >
+                    <a href="https://wa.me/5585997105228" target="_blank" className="bg-black dark:bg-emerald-700 text-white px-5 py-2.5 rounded-full text-[12px] font-bold hover:scale-105 transition-all shadow-md">
                         Reservar
                     </a>
                 </div>
